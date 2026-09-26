@@ -1,10 +1,10 @@
 // /utils/getMetadata.ts
-import { Storage } from '@google-cloud/storage'
+import { createGoogleCloudStorage } from './googleCloudStorage'
 import { PublicKey, StorageUtils } from '@bsv/sdk'
 import { normalizeUhrpPagination } from '../resourceLimits'
 import { listVerifiedAdvertisements } from './storedAdvertisements'
 
-const storage = new Storage()
+const storage = createGoogleCloudStorage()
 const { GCP_BUCKET_NAME } = process.env
 
 interface FileMetadata {

@@ -1,4 +1,4 @@
-import { Storage } from '@google-cloud/storage';
+import { createGoogleCloudStorage } from '../utils/googleCloudStorage';
 import createUHRPAdvertisement from '../utils/createUHRPAdvertisement';
 import { Request, Response } from 'express';
 import { StorageUtils } from '@bsv/sdk';
@@ -11,7 +11,7 @@ const {
   GCP_BUCKET_NAME
 } = process.env
 
-const storage = new Storage()
+const storage = createGoogleCloudStorage()
 
 interface AdvertiseRequest extends Request {
   body: {

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { Storage } from '@google-cloud/storage'
+import { createGoogleCloudStorage } from '../utils/googleCloudStorage'
 import { PublicKey, PushDrop, SHIPBroadcaster, StorageUtils, Utils } from '@bsv/sdk'
 import getPriceForFile from '../utils/getPriceForFile'
 import { getWallet } from '../utils/walletSingleton'
@@ -16,7 +16,7 @@ import {
 } from '../utils/storedAdvertisements'
 import { decodeAndVerifyUHRPAdvertisement } from '../utils/uhrpTokenValidation'
 
-const storage = new Storage()
+const storage = createGoogleCloudStorage()
 const GCP_BUCKET_NAME = process.env.GCP_BUCKET_NAME as string
 const { lookupPreset } = uhrpNetwork()
 
