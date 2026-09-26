@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { extendObjectRetention } from '../utils/extendObjectRetention'
 import { createGoogleCloudStorage } from '../utils/googleCloudStorage'
 import { PublicKey, PushDrop, SHIPBroadcaster, StorageUtils, Utils } from '@bsv/sdk'
 import getPriceForFile from '../utils/getPriceForFile'
@@ -143,9 +144,8 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
       output.satoshis === 1 && output.lockingScript.toHex() === newLockingScript.toHex()
     ).length !== 1) throw new Error('Wallet did not create exactly one renewed UHRP advertisement')
 
-    const customTime = new Date(newExpiryTime * 1000).toISOString()
     const chirpExtended = await getChirpStore().extendRootLease(previous.metadata.objectIdentifier, newExpiryTime)
-    if (!chirpExtended) await objectFile.setMetadata({ customTime })
+    if (!chirpExtended) await extendObjectRetention(objectFile, newExpiryTime)
     const result = await new SHIPBroadcaster(['tm_uhrp'], {
       networkPreset: lookupPreset as 'mainnet' | 'testnet'
     }).broadcast(transaction)
