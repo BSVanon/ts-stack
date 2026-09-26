@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "lastReviewed": "2026-09-25",
+  "lastReviewed": "2026-09-26",
   "owner": "ts-stack-maintainers",
   "entries": [
     {
@@ -124,29 +124,29 @@
     },
     {
       "name": "@bsv/overlay",
-      "publishedVersion": "2.6.1",
-      "releaseType": "patch",
+      "publishedVersion": "2.6.2",
+      "releaseType": "none",
       "summary": "Maps SQL NULL output block heights to absent confirmation metadata without inventing a height or changing stored state. Strict engine height validation remains unchanged.",
       "migration": "No wire, API, or database migration. Deploy the reviewed patch through the protected release workflow; retain existing validation and configured resource bounds."
     },
     {
       "name": "@bsv/overlay-discovery-services",
-      "publishedVersion": "2.2.5",
-      "releaseType": "patch",
+      "publishedVersion": "2.2.6",
+      "releaseType": "none",
       "summary": "Adds the unique MongoDB _id tie breaker to discovery pagination so bounded overflow probes preserve stable ordering.",
       "migration": "No wire, API, or database migration. Deploy the reviewed patch through the protected release workflow; retain existing validation and configured resource bounds."
     },
     {
       "name": "@bsv/overlay-express",
-      "publishedVersion": "2.7.2",
-      "releaseType": "patch",
+      "publishedVersion": "2.7.3",
+      "releaseType": "none",
       "summary": "Pages built-in discovery overflow probes within the discovery service 1000-row query bound, retaining the configured engine ceiling and explicit overflow failure.",
       "migration": "No wire, API, or database migration. Deploy the reviewed patch through the protected release workflow; retain existing validation and configured resource bounds."
     },
     {
       "name": "@bsv/overlay-topics",
-      "publishedVersion": "1.9.0",
-      "releaseType": "patch",
+      "publishedVersion": "1.9.1",
+      "releaseType": "none",
       "summary": "Accepts SDK StorageDownloader UHRP pages up to 200 rows with deterministic outpoint ordering. Retains selector allowlists and authenticated advertisement admission.",
       "migration": "No wire, API, or database migration. Deploy the reviewed patch through the protected release workflow; retain existing validation and configured resource bounds."
     },

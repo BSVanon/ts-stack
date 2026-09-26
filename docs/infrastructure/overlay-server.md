@@ -2,9 +2,9 @@
 id: infra-overlay-server
 title: 'Overlay Server'
 kind: infra
-version: '2.1.6'
-last_updated: '2026-07-27'
-last_verified: '2026-08-26'
+version: '2.1.43'
+last_updated: '2026-09-26'
+last_verified: '2026-09-26'
 review_cadence_days: 30
 status: stable
 tags: [overlay, topic-manager, lookup-service, transaction-routing]
