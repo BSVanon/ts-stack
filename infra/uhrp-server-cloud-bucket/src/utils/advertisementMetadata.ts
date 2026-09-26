@@ -161,7 +161,18 @@ export function requireAdvertisementTags(tags: unknown, metadata: AdvertisementM
     }
     actual.add(tag)
   }
-  for (const expected of advertisementTags(metadata)) {
+  // The four lookup tags are selectors and must match signed ownership.
+  // Older insertions lack descriptive tags; those fields remain authenticated
+  // by the signed envelope and token, and any present descriptive tag must match.
+  for (const expected of advertisementTags(metadata).slice(0, 4)) {
     if (!actual.has(expected)) throw new Error('UHRP advertisement tags do not match signed metadata')
+  }
+  for (const prefix of ['content_type_', 'size_']) {
+    const expected = prefix === 'size_' ? `size_${metadata.fileSize}` : `content_type_${metadata.contentType}`
+    for (const tag of actual) {
+      if (tag.startsWith(prefix) && tag !== expected) {
+        throw new Error('UHRP advertisement tags do not match signed metadata')
+      }
+    }
   }
 }

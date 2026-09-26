@@ -30,9 +30,41 @@ location, expiry, size, and host-derived locking key. Uploader identity and the
 GCS object identifier are not wire fields, so owner-only list, find, and renew
 operations additionally require locally server-signed wallet metadata bound to
 the exact token, BEEF output, and tags. Unsigned legacy metadata is not accepted
-as ownership evidence. Re-advertise legacy objects with this release before
-using private owner-management or renewal routes; their public UHRP availability
-is not changed by this local migration.
+as ownership evidence. Owner listings omit those rows and report
+`legacyAdvertisementsPending` for the current raw wallet page; `nextOffset`
+lets clients continue through older rows to verified records. Signed rows still
+fail closed on signature, source-output, selector, or tag disagreement.
+
+The four ownership/lookup tags must match signed metadata. Older insertions
+may lack descriptive name, size, and type tags; their size and type remain
+authenticated in the envelope, and present descriptive tags must agree.
+
+## Recover legacy ownership without replacing transactions
+
+The 0.2.45 operator tool can add signed metadata to an existing output without
+spending, rebroadcasting, or extending its hosting commitment. Run it with the
+service identity and private runtime configuration, first without `--apply`:
+
+```sh
+node out/src/cli/migrateLegacyAdvertisements.js
+node out/src/cli/migrateLegacyAdvertisements.js --apply
+```
+
+It verifies the token signature and host key, source output, exact configured
+location, provider ownership receipt, size, retention, generation, and streamed
+SHA-256 content before signing. A second metadata read detects generation
+races. The wallet merges the envelope into the original output and read-back
+confirms its outpoint, value, and spendable state. Lookup tags are checked
+against provider ownership; they never supply ownership authority.
+
+The scan and each stream are bounded. Summaries contain counts only. A failed
+row makes the command exit nonzero and needs private operator investigation;
+expired, invalid, missing, or changed objects must not be silently reissued or
+given new retention. Already verified records are idempotent. Keep a private
+pre-migration inventory and validate owner list/find/renew plus public lookup
+and retrieval in staging before production. Earlier images cannot manage
+legacy records without signed metadata; forward-fix recovery rather than
+rolling back verification. Public token bytes and object contents are unchanged.
 
 Paid upload capabilities are valid for at most 15 minutes and never beyond the
 purchased retention window. Their signatures bind the exact content length,
