@@ -12,7 +12,7 @@ export async function extendObjectRetention(file: File, expiryTime: number): Pro
     const current = metadata.customTime == null ? 0 : Date.parse(metadata.customTime)
     if (!Number.isFinite(current)) throw new TypeError('Object retention metadata is invalid')
     if (proposed <= current) return
-    if (metadata.metageneration == null || !/^[1-9][0-9]*$/.test(String(metadata.metageneration))) {
+    if (metadata.metageneration == null || !/^[1-9]\d*$/.test(String(metadata.metageneration))) {
       throw new TypeError('Object retention metageneration is invalid')
     }
     try {
