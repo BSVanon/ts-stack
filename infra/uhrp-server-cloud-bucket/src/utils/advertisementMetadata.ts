@@ -167,9 +167,13 @@ export function requireAdvertisementTags(tags: unknown, metadata: AdvertisementM
   for (const expected of advertisementTags(metadata).slice(0, 4)) {
     if (!actual.has(expected)) throw new Error('UHRP advertisement tags do not match signed metadata')
   }
+  requireDescriptiveTags(actual, metadata)
+}
+
+function requireDescriptiveTags(tags: Set<string>, metadata: AdvertisementMetadata): void {
   for (const prefix of ['content_type_', 'size_']) {
     const expected = prefix === 'size_' ? `size_${metadata.fileSize}` : `content_type_${metadata.contentType}`
-    for (const tag of actual) {
+    for (const tag of tags) {
       if (tag.startsWith(prefix) && tag !== expected) {
         throw new Error('UHRP advertisement tags do not match signed metadata')
       }
