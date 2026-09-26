@@ -379,3 +379,5 @@ route, and failure-path checks above pass.
 ---
 
 © 2025 – Feel free to adapt, improve, and PR!
+
+Advertisement, owner metadata and renewal operations use the same `GCP_STORAGE_CREDS`/`GCP_PROJECT_ID` identity as signed uploads. When credentials are explicitly configured, those operations must not fall back to the runtime metadata server. Unset credentials retain ADC for installations that intentionally use a runtime service account. Malformed configured credentials fail without logging their contents.
