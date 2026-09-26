@@ -23,6 +23,8 @@ limits with `CHIRP_MAX_ACTIVE_SESSIONS`,
 `CHIRP_MAX_STAGED_BYTES_PER_SESSION`; invalid or non-positive values fail
 startup.
 
+UHRP and CHIRP renewal keep the existing retention timestamp or advance it to the renewed expiry plus five minutes. Metadata updates use metageneration preconditions and bounded retries; a short extension never reduces Google Cloud Storage `customTime`.
+
 ## Advertisement, ownership, and upload trust
 
 The public UHRP token authenticates the host identity, content hash, HTTPS
