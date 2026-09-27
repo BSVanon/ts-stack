@@ -81,7 +81,12 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
     if (Date.now() > previous.metadata.expiryTime * 1000) {
       return res.status(410).json({ status: 'error', code: 'ERR_ADVERTISEMENT_EXPIRED', description: `The advertisement for ${uhrpUrl} has expired` })
     }
-    const objectFile = storage.bucket(GCP_BUCKET_NAME).file(`cdn/${previous.metadata.objectIdentifier}`)
+    const identifier = previous.metadata.objectIdentifier
+    const isChirpRoot = new URL(previous.metadata.hostedFileLocation).pathname ===
+      `/chirp/v1/${identifier}/objects/${identifier}`
+    const objectFile = storage.bucket(GCP_BUCKET_NAME).file(
+      isChirpRoot ? `chirp/v1/objects/${identifier}` : `cdn/${identifier}`
+    )
     const [gcsMetadata] = await objectFile.getMetadata()
     const gcsSize = typeof gcsMetadata.size === 'string' ? Number(gcsMetadata.size) : gcsMetadata.size
     if (!Number.isSafeInteger(gcsSize) || gcsSize !== previous.metadata.fileSize) {
@@ -144,8 +149,12 @@ const renewHandler = async (req: RenewRequest, res: Response<RenewResponse>) => 
       output.satoshis === 1 && output.lockingScript.toHex() === newLockingScript.toHex()
     ).length !== 1) throw new Error('Wallet did not create exactly one renewed UHRP advertisement')
 
-    const chirpExtended = await getChirpStore().extendRootLease(previous.metadata.objectIdentifier, newExpiryTime)
-    if (!chirpExtended) await extendObjectRetention(objectFile, newExpiryTime)
+    if (isChirpRoot) {
+      const extended = await getChirpStore().extendRootLease(identifier, newExpiryTime)
+      if (!extended) throw new Error('CHIRP root lease is not active')
+    } else {
+      await extendObjectRetention(objectFile, newExpiryTime)
+    }
     const result = await new SHIPBroadcaster(['tm_uhrp'], {
       networkPreset: lookupPreset as 'mainnet' | 'testnet'
     }).broadcast(transaction)

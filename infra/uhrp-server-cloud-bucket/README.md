@@ -25,6 +25,13 @@ startup.
 
 UHRP and CHIRP renewal keep the existing retention timestamp or advance it to the renewed expiry plus five minutes. Metadata updates use metageneration preconditions and bounded retries; a short extension never reduces Google Cloud Storage `customTime`.
 
+Signed ownership metadata accepts the ordinary `/cdn/<object>` location and the
+exact CHIRP root route `/chirp/v1/<root>/objects/<root>`. A CHIRP root identifier
+must equal the advertised content hash identifier; unrelated objects, query
+strings and credentials are rejected. Renewal reads the actual CHIRP root
+object, extends its committed closure and rejects an inactive root. It does not
+create or rely on a duplicate CDN copy.
+
 ## Advertisement, ownership, and upload trust
 
 The public UHRP token authenticates the host identity, content hash, HTTPS
