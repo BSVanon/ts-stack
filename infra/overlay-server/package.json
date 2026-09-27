@@ -1,7 +1,7 @@
 {
   "name": "@bsv/overlay-express-examples",
   "private": true,
-  "version": "2.1.43",
+  "version": "2.1.44",
   "overrides": {
     "gaxios": "7.3.0"
   },
@@ -26,7 +26,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "oxlint src --deny-warnings",
-    "test": "node --import tsx --test src/lifecycle.test.ts src/mandalaStateStore.test.ts src/securityConfig.test.ts",
+    "test": "node --import tsx --test src/lifecycle.test.ts src/mandalaStateStore.test.ts src/securityConfig.test.ts src/discoveryConfig.test.ts",
     "start": "node --import ./dist/telemetry.js dist/index.js",
     "dev": "tsx src/index.ts"
   },
