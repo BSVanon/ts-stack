@@ -2,9 +2,9 @@
 id: infra-uhrp-cloud
 title: 'UHRP Server (Cloud Bucket)'
 kind: infra
-version: '0.2.45'
-last_updated: '2026-09-26'
-last_verified: '2026-09-26'
+version: '0.2.49'
+last_updated: '2026-09-27'
+last_verified: '2026-09-27'
 review_cadence_days: 30
 status: stable
 tags: [uhrp, storage, cloud, google-cloud-run, production]
@@ -14,11 +14,12 @@ tags: [uhrp, storage, cloud, google-cloud-run, production]
 
 > A production-grade UHRP host server backed by Google Cloud Storage. Stores large files in cloud buckets with optional billing/micropayments and includes advertising infrastructure for overlay network discovery.
 
-The 0.2.45 source candidate adds bounded owner-list pagination and an explicit
-legacy ownership migration. Publication and deployment remain separate operator
-actions through the protected image workflow. Existing token bytes, object
-contents, retention commitments, and current signed-advertisement checks remain
-unchanged.
+The 0.2.49 source candidate fixes CHIRP renewal pricing by reading the verified
+root from `chirp/v1/objects/<root>` rather than looking for a duplicate CDN copy.
+Ordinary advertisements retain their `cdn/<object>` path. Signed ownership,
+provider size checks, pricing, and renewal behavior remain unchanged. No object,
+advertisement, wallet, or lease migration is required. Publication and deployment
+remain separate operator actions through the protected image workflow.
 
 ## What it does
 

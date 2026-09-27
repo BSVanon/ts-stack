@@ -32,6 +32,11 @@ strings and credentials are rejected. Renewal reads the actual CHIRP root
 object, extends its committed closure and rejects an inactive root. It does not
 create or rely on a duplicate CDN copy.
 
+Renewal pricing reads that same verified storage object: ordinary advertisements
+use `cdn/<object>`, and CHIRP root advertisements use
+`chirp/v1/objects/<root>`. Both paths retain the signed-owner and current provider
+size checks; a missing root fails closed without a CDN fallback.
+
 Authenticated staged-object HEAD responses have no body, including existence
 and validation-error responses. Authentication signs the same empty bytes
 that HTTP sends, allowing clients to verify both present and absent objects
