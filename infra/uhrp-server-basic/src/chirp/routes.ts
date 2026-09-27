@@ -94,7 +94,11 @@ async function createSessionHandler(req: AuthenticatedRequest, res: Response): P
     return error(res, 400, 'ERR_CHIRP_SESSION', 'Invalid CHIRP retentionSeconds or logicalLength.')
   }
   try {
-    const session = await getChirpStore().createSession(identityKey, retentionSeconds, logicalLength)
+    const session = await getChirpStore().createSession(
+      identityKey,
+      retentionSeconds,
+      logicalLength
+    )
     return res.status(201).json({
       uploadId: session.uploadId,
       stagingExpiresAt: String(session.stagingExpiresAt)
@@ -121,7 +125,8 @@ async function headStagedObjectHandler(
   if (uploadId == null || identifier == null)
     return error(res, 400, 'ERR_CHIRP_IDENTIFIER', 'Invalid upload or object identifier.')
   const exists = await getChirpStore().hasStagedObject(uploadId, identityKey, identifier)
-  return exists ? res.sendStatus(200) : res.sendStatus(404)
+  // HEAD omits a body on the wire; authentication must sign those same bytes.
+  return res.status(exists ? 200 : 404).end()
 }
 
 async function putStagedObjectHandler(req: AuthenticatedRequest, res: Response): Promise<Response> {
@@ -370,6 +375,7 @@ function authError(res: Response): Response {
 }
 
 function error(res: Response, status: number, code: string, description: string): Response {
+  if (res.req?.method === 'HEAD') return res.status(status).end()
   return res.status(status).json({ status: 'error', code, description })
 }
 

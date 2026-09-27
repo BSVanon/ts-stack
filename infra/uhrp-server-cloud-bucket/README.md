@@ -32,6 +32,11 @@ strings and credentials are rejected. Renewal reads the actual CHIRP root
 object, extends its committed closure and rejects an inactive root. It does not
 create or rely on a duplicate CDN copy.
 
+Authenticated staged-object HEAD responses have no body, including existence
+and validation-error responses. Authentication signs the same empty bytes
+that HTTP sends, allowing clients to verify both present and absent objects
+before an upload. Other methods retain their existing JSON error responses.
+
 ## Advertisement, ownership, and upload trust
 
 The public UHRP token authenticates the host identity, content hash, HTTPS
