@@ -214,6 +214,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed (2.8.9 candidate)
+
+- AuthFetch bounds general payloads in binary bytes using its HTTP request and configured response budgets instead of charging each byte against the generic JSON authentication envelope budget. Complete 4 MiB CHIRP chunks now reach the transport; HTTP request/response bounds, authentication checks, certificate limits and redirect rejection remain enforced. No API, wire or wallet-data migration is required.
+
 ### Fixed (2.8.8 candidate)
 
 - Align explicit Script verification with bitcoin-sv's coin-era and Chronicle version gates, CLTV/CSV, historical signature hashing, original-digest serialization, numeric widths and shift bounds. Node-derived transaction fixtures cover each corrected mismatch.
