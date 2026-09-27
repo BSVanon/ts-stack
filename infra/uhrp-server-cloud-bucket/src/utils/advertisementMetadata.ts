@@ -73,9 +73,12 @@ function validate(value: unknown): AdvertisementMetadata {
   PublicKey.fromString(uploaderIdentityKey)
   const hostedFileLocation = text(input.hostedFileLocation, 'UHRP hosted file location', 2048)
   const location = new URL(hostedFileLocation)
+  const isChirpRoot = objectIdentifier === uhrpUrl &&
+    location.pathname === `/chirp/v1/${objectIdentifier}/objects/${objectIdentifier}`
   if (
     location.protocol !== 'https:' || location.username !== '' || location.password !== '' ||
-    location.hash !== '' || location.search !== '' || location.pathname !== `/cdn/${objectIdentifier}`
+    location.hash !== '' || location.search !== '' ||
+    (location.pathname !== `/cdn/${objectIdentifier}` && !isChirpRoot)
   ) throw new Error('UHRP hosted file location is invalid')
   const contentType = text(input.contentType, 'UHRP content type', 200)
   return {
