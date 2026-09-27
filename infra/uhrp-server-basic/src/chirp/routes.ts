@@ -13,7 +13,7 @@ import { CHIRPError } from './core/errors'
 import { hashForObjectIdentifier, verifyObjectBytes } from './core/hash'
 import { parseCHIRPURL } from './core/uri'
 import { validateCHIRPClosure } from './core/validation'
-import type { ChirpCommitRecord } from './contracts'
+import type { ChirpCommitRecord, ChirpStageResult } from './contracts'
 
 const MAX_OBJECT_BYTES = CHIRP_OBJECT_MAX_BODY_BYTES
 const MAX_LOGICAL_BYTES = BigInt(unboundedResourceLimit('MAX_LOGICAL_BYTES', 11_000_000_000))
@@ -166,6 +166,10 @@ async function putStagedObjectHandler(req: AuthenticatedRequest, res: Response):
     declaredLength,
     MAX_OBJECT_BYTES
   )
+  return stagedObjectResponse(res, outcome)
+}
+
+function stagedObjectResponse(res: Response, outcome: ChirpStageResult): Response {
   if (outcome === 'created') return res.sendStatus(201)
   if (outcome === 'exists') return res.sendStatus(204)
   if (outcome === 'session_missing')

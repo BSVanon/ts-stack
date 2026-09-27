@@ -14,6 +14,8 @@ jest.mock('../../logger', () => ({ log: { error: jest.fn() } }))
 
 const express = require('express')
 const { createAuthMiddleware } = require('@bsv/auth-express-middleware')
+const { rateLimit } = require('express-rate-limit')
+const { rateLimitOptions, authenticatedIdentityKey } = require('../../security/rateLimitPolicy')
 const { AuthFetch, PrivateKey, ProtoWallet } = require('@bsv/sdk')
 const { chirpPostAuthRoutes } = require('../../chirp/routes')
 const {
@@ -31,6 +33,7 @@ let received
 beforeAll(async () => {
   const app = express()
   clientWallet = new ProtoWallet(PrivateKey.fromRandom())
+  app.use(rateLimit(rateLimitOptions('UHRP_PRE_AUTH_RATE_LIMIT', { windowMs: 60_000, limit: 300 })))
   app.put(CHIRP_STAGED_OBJECT_PATH, createChirpObjectBodyParser())
   app.use(express.json({ limit: 262144 }))
   app.use(bodyParserErrorHandler)
@@ -39,6 +42,15 @@ beforeAll(async () => {
       wallet: new ProtoWallet(PrivateKey.fromRandom()),
       allowUnauthenticated: false
     })
+  )
+  app.use(
+    rateLimit(
+      rateLimitOptions(
+        'UHRP_AUTHENTICATED_RATE_LIMIT',
+        { windowMs: 60_000, limit: 1000 },
+        { keyGenerator: authenticatedIdentityKey }
+      )
+    )
   )
   const route = chirpPostAuthRoutes.find(value => value.type === 'put')
   app.put(route.path, route.func)
@@ -73,7 +85,15 @@ afterAll(async () => {
   await new Promise(resolve => server.close(resolve))
 })
 
-const authFetch = () => new AuthFetch(clientWallet, undefined, undefined, undefined, {}, fetch)
+// Hashing full chunks can outlast an idle pooled socket while the event loop is busy.
+// Each fixture request uses a fresh HTTP connection; authentication bytes are unchanged.
+const loopbackFetch = (url, options = {}) => {
+  const headers = new Headers(options.headers)
+  headers.set('Connection', 'close')
+  return fetch(url, { ...options, headers })
+}
+const authFetch = () =>
+  new AuthFetch(clientWallet, undefined, undefined, undefined, {}, loopbackFetch)
 const objectURL = bytes =>
   `${origin}/chirp/v1/uploads/test-session/objects/${objectIdentifierForBytes(bytes)}`
 
@@ -119,11 +139,11 @@ test('rejects bytes changed after signing without staging an object', async () =
     if (options?.method === 'PUT') {
       const changed = Buffer.from(options.body)
       changed[0] ^= 1
-      const response = await fetch(url, { ...options, body: changed })
+      const response = await loopbackFetch(url, { ...options, body: changed })
       statuses.push(response.status)
       return response
     }
-    return await fetch(url, options)
+    return await loopbackFetch(url, options)
   }
   const auth = new AuthFetch(clientWallet, undefined, undefined, undefined, {}, tamper)
   await expect(
@@ -141,7 +161,7 @@ test('rejects bytes changed after signing without staging an object', async () =
 
 test('rejects an oversized raw body before authentication or staging', async () => {
   const bytes = new Uint8Array(4194305)
-  const response = await fetch(objectURL(bytes), {
+  const response = await loopbackFetch(objectURL(bytes), {
     method: 'PUT',
     headers: { 'Content-Type': 'application/octet-stream' },
     body: bytes
@@ -155,7 +175,7 @@ test.each(['gzip', 'br', 'deflate'])(
   'rejects %s content encoding before authentication or staging',
   async encoding => {
     const bytes = Uint8Array.of(0, 255)
-    const response = await fetch(objectURL(bytes), {
+    const response = await loopbackFetch(objectURL(bytes), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/octet-stream', 'Content-Encoding': encoding },
       body: bytes
