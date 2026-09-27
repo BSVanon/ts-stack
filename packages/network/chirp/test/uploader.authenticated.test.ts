@@ -37,12 +37,13 @@ test('default AuthFetch uploads exact identity bytes with HTTP-managed length', 
     const bytes: unknown = req.body
     expect(Buffer.isBuffer(bytes)).toBe(true)
     if (!Buffer.isBuffer(bytes)) throw new Error('Expected authenticated raw bytes')
+    const byteLength = Buffer.byteLength(bytes)
     expect(req.get('content-encoding') ?? 'identity').toBe('identity')
     expect(req.get('content-type')).toBe('application/octet-stream')
-    expect(Number(req.get('content-length'))).toBe(bytes.length)
+    expect(Number(req.get('content-length'))).toBe(byteLength)
     expect(objectIdentifierForBytes(bytes)).toBe(req.params.objectIdentifier)
     staged.set(req.params.objectIdentifier, bytes)
-    lengths.push(bytes.length)
+    lengths.push(byteLength)
     res.status(201).end()
   })
   let origin = ''
