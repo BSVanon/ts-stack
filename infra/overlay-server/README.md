@@ -22,8 +22,8 @@ Resource profiles and the custom-lookup safety contract are documented in
 
 ## Prerequisites
 
-1. **Node.js >= 20** (the container uses Node 22)
-2. **npm >= 10** (comes with Node).
+1. **Node.js 24** (the container and governed contributor runtime use Node 24)
+2. **npm >= 11** (comes with Node 24).
 3. **Docker & Docker Compose** – only required if you want to run the full stack with MySQL and MongoDB from containers.
 
 ## Quick Start
@@ -128,3 +128,15 @@ and consume Overlay Topics 1.8.0's stricter admission contract on upgrade.
 Before a deployed upgrade, follow the [Mandala migration guide](../../packages/overlays/topics/README.md#mandala-admission-and-the-180-upgrade)
 and audit historical admin and owner records. Source publication does not
 upgrade a running overlay or its locked dependencies automatically.
+
+## UHRP discovery compatibility
+
+Image candidate 2.1.43 consumes Overlay 2.6.2, discovery services 2.2.6,
+Overlay Express 2.7.3 and Overlay Topics 1.9.1. These patches restore bounded
+SDK discovery across deterministic pages, hydrate unconfirmed SQL output heights
+as absent metadata, and accept the SDK's 200-row UHRP page. Existing signatures,
+query selectors, transaction bytes, resource ceilings and database schemas are
+unchanged. No data migration is required. Build and publish through the protected
+image workflow, validate submit/discovery/download in staging, and promote only
+the same verified digest after acceptance. Source reconciliation does not deploy
+a running service.
