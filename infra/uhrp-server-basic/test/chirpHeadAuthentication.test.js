@@ -14,6 +14,11 @@ jest.mock('../out/src/logger', () => ({ log: { error: jest.fn() } }))
 
 const express = require('express')
 const { createAuthMiddleware } = require('@bsv/auth-express-middleware')
+const { rateLimit } = require('express-rate-limit')
+const {
+  rateLimitOptions,
+  authenticatedIdentityKey
+} = require('../out/src/security/rateLimitPolicy')
 const { AuthFetch, PrivateKey, ProtoWallet } = require('@bsv/sdk')
 const { chirpPostAuthRoutes } = require('../out/src/chirp/routes')
 const { objectIdentifierForBytes } = require('../out/src/chirp/core/hash')
@@ -29,7 +34,17 @@ beforeAll(async () => {
   const serverWallet = new ProtoWallet(PrivateKey.fromRandom())
   clientWallet = new ProtoWallet(PrivateKey.fromRandom())
   app.use(express.json())
+  app.use(rateLimit(rateLimitOptions('UHRP_PRE_AUTH_RATE_LIMIT', { windowMs: 60_000, limit: 300 })))
   app.use(createAuthMiddleware({ wallet: serverWallet, allowUnauthenticated: false }))
+  app.use(
+    rateLimit(
+      rateLimitOptions(
+        'UHRP_AUTHENTICATED_RATE_LIMIT',
+        { windowMs: 60_000, limit: 1000 },
+        { keyGenerator: authenticatedIdentityKey }
+      )
+    )
+  )
   const route = chirpPostAuthRoutes.find(
     value => value.type === 'head' && value.path.includes('/uploads/')
   )
