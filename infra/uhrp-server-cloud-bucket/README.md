@@ -37,6 +37,15 @@ and validation-error responses. Authentication signs the same empty bytes
 that HTTP sends, allowing clients to verify both present and absent objects
 before an upload. Other methods retain their existing JSON error responses.
 
+Authenticated staged-object PUTs parse bounded identity bytes before BRC-103
+verification. The handler stages those same verified bytes rather than rereading
+the consumed request stream. The parser is scoped to staged-object PUTs, rejects
+compressed bodies, and retains the `CHIRP_OBJECT_MAX_BODY_BYTES` ceiling
+(default 4 MiB). JSON routes, HMAC streaming `/put`, and bodyless HEAD responses
+retain their existing behavior. Use SDK 2.8.9 or later for full-size authenticated
+CHIRP chunks; its HTTP transport keeps its existing framing and response limits.
+No object, session, advertisement or persistence migration is required.
+
 ## Advertisement, ownership, and upload trust
 
 The public UHRP token authenticates the host identity, content hash, HTTPS
