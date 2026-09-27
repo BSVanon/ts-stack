@@ -94,7 +94,8 @@ describe('AuthFetch authenticated peer lifecycle', () => {
       undefined,
       expect.anything(),
       undefined,
-      'app.example'
+      'app.example',
+      { maxGeneralPayloadBytes: null }
     )
   })
 
@@ -171,7 +172,8 @@ describe('AuthFetch authenticated peer lifecycle', () => {
       requestedCertificates,
       expect.anything(),
       undefined,
-      'app.example'
+      'app.example',
+      { maxGeneralPayloadBytes: null }
     )
     expect(response.status).toBe(201)
     expect(response.headers.get('x-test')).toBe('passed')

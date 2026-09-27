@@ -347,7 +347,10 @@ export class AuthFetch {
       this.requestedCertificates,
       this.sessionManager,
       undefined,
-      this.originator
+      this.originator,
+      // The HTTP transport bounds framed binary bytes; the generic JSON
+      // envelope budget would charge each byte as four JSON characters.
+      { maxGeneralPayloadBytes: null }
     )
     await newPeer.ready
     const peerState: AuthPeer = {

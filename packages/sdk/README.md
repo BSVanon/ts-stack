@@ -34,6 +34,13 @@ the most recent 1,000 entries. Simplified authenticated HTTP frames, bodies,
 headers, signatures, request IDs, and certificate-request headers have fixed
 size/count limits and redirects are rejected.
 
+SDK 2.8.9 lets AuthFetch use the existing HTTP transport byte limits for
+binary application payloads. A full 4 MiB CHIRP chunk no longer consumes the
+generic authentication envelope's JSON expansion budget before HTTP dispatch.
+Request framing remains capped at 16 MiB, configured response body limits remain
+enforced, and handshake, certificate, signature, nonce and redirect checks are
+unchanged. No API, wire or wallet-data migration is required.
+
 For signature payloads of at least 64 KiB, `ProtoWallet` uses asynchronous
 platform SHA-256 when Web Crypto is available, avoiding long synchronous
 hashing on browser UI threads. Unsupported or failed native hashing falls back
