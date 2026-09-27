@@ -75,8 +75,8 @@
     },
     {
       "name": "@bsv/chirp",
-      "publishedVersion": "0.1.2",
-      "releaseType": "patch",
+      "publishedVersion": "0.1.3",
+      "releaseType": "none",
       "summary": "Fixes authenticated CHIRP object uploads: omit explicit Content-Length and Content-Encoding application headers that AuthFetch rejects, while HTTP transport generates the correct length and absent encoding preserves identity bytes. Adds a real mutually authenticated client/server regression that verifies raw object bytes, automatic HTTP framing, object identifiers, caller identity, and successful commit.",
       "migration": "No API, codec, object identifier, service schema, or wire-format migration. Upgrade @bsv/chirp to 0.1.3. Custom authenticated transports should send the supplied owned byte body unchanged and supply ordinary HTTP framing; Content-Type remains signed through AuthFetch. Existing Cloud Bucket 0.2.47 and Lite 0.1.44 services remain compatible."
     },
