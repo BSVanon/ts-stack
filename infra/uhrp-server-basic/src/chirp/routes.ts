@@ -4,7 +4,8 @@ import { Readable } from 'node:stream'
 import { createUHRPAdvertisementWithResult } from '../utils/createUHRPAdvertisement'
 import getPriceForFile from '../utils/getPriceForFile'
 import { log } from '../logger'
-import { readBodyLimitBytes, readResourceLimit } from '../security/edgePolicy'
+import { readResourceLimit } from '../security/edgePolicy'
+import { CHIRP_OBJECT_MAX_BODY_BYTES, CHIRP_STAGED_OBJECT_PATH } from './bodyMiddleware'
 import { CHIRP_OPENAPI_DOCUMENT } from './openapi'
 import { getChirpStore } from './store'
 import { decodeCHIRPNode } from './core/codec'
@@ -12,9 +13,9 @@ import { CHIRPError } from './core/errors'
 import { hashForObjectIdentifier, verifyObjectBytes } from './core/hash'
 import { parseCHIRPURL } from './core/uri'
 import { validateCHIRPClosure } from './core/validation'
-import type { ChirpCommitRecord } from './contracts'
+import type { ChirpCommitRecord, ChirpStageResult } from './contracts'
 
-const MAX_OBJECT_BYTES = readBodyLimitBytes('CHIRP_OBJECT', 4_194_304)
+const MAX_OBJECT_BYTES = CHIRP_OBJECT_MAX_BODY_BYTES
 const MAX_LOGICAL_BYTES = BigInt(unboundedResourceLimit('MAX_LOGICAL_BYTES', 11_000_000_000))
 const MAX_OBJECTS = unboundedResourceLimit('MAX_OBJECTS', 100_000)
 const MAX_RETENTION_SECONDS = unboundedResourceLimit('MAX_RETENTION_SECONDS', 31_536_000)
@@ -43,12 +44,12 @@ export const chirpPostAuthRoutes = [
   { type: 'post', path: '/chirp/v1/uploads', func: createSessionHandler },
   {
     type: 'head',
-    path: '/chirp/v1/uploads/:uploadId/objects/:objectIdentifier',
+    path: CHIRP_STAGED_OBJECT_PATH,
     func: headStagedObjectHandler
   },
   {
     type: 'put',
-    path: '/chirp/v1/uploads/:uploadId/objects/:objectIdentifier',
+    path: CHIRP_STAGED_OBJECT_PATH,
     func: putStagedObjectHandler
   },
   { type: 'post', path: '/chirp/v1/uploads/:uploadId/commit', func: commitHandler }
@@ -152,14 +153,23 @@ async function putStagedObjectHandler(req: AuthenticatedRequest, res: Response):
     drain(req)
     return error(res, 413, 'ERR_CHIRP_OBJECT_SIZE', 'CHIRP object exceeds the upload limit.')
   }
+  if (!Buffer.isBuffer(req.body)) {
+    drain(req)
+    return error(res, 400, 'ERR_CHIRP_BODY', 'CHIRP object bytes were not parsed.')
+  }
   const outcome = await getChirpStore().stageObject(
     uploadId,
     identityKey,
     identifier,
-    req,
+    // Authentication consumed the HTTP stream; stage the same verified bytes.
+    Readable.from([req.body]),
     declaredLength,
     MAX_OBJECT_BYTES
   )
+  return stagedObjectResponse(res, outcome)
+}
+
+function stagedObjectResponse(res: Response, outcome: ChirpStageResult): Response {
   if (outcome === 'created') return res.sendStatus(201)
   if (outcome === 'exists') return res.sendStatus(204)
   if (outcome === 'session_missing')
